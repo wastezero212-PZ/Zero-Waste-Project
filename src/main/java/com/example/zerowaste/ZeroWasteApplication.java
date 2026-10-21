@@ -1,4 +1,4 @@
-package com.example.zero_waste;
+package com.example.zerowaste;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

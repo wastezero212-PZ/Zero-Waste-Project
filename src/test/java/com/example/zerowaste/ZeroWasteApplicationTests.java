@@ -1,4 +1,4 @@
-package com.example.zero_waste;
+package com.example.zerowaste;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
