@@ -8,7 +8,7 @@ import com.example.zerowaste.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Authentication Manager", description = "Endpoints for managing user registration")
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping(value = "api/auth")
 public class AuthenticationController {
 

@@ -10,9 +10,10 @@ import com.example.zerowaste.model.User;
 import com.example.zerowaste.repository.RoleRepository;
 import com.example.zerowaste.repository.UserRepository;
 import com.example.zerowaste.service.UserService;
-import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -54,11 +55,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDto> findAll() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toDto)
-                .toList();
+    public Page<UserResponseDto> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toDto);
     }
 
     @Override

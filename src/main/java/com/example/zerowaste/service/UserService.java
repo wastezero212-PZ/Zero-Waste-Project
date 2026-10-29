@@ -2,13 +2,14 @@ package com.example.zerowaste.service;
 
 import com.example.zerowaste.dto.user.UserRegistrationRequestDto;
 import com.example.zerowaste.dto.user.UserResponseDto;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
     UserResponseDto save(UserRegistrationRequestDto requestDto);
 
-    List<UserResponseDto> findAll();
+    Page<UserResponseDto> findAll(Pageable pageable);
 
     UserResponseDto getById(Long id);
 
