@@ -16,4 +16,6 @@ public interface UserService {
     UserResponseDto updateById(Long id, UserRegistrationRequestDto requestDto);
 
     void deleteById(Long id);
+
+    UserResponseDto createAdmin();
 }
