@@ -8,9 +8,13 @@ import com.example.zerowaste.mapper.ProductCategoryMapper;
 import com.example.zerowaste.model.ProductCategory;
 import com.example.zerowaste.repository.ProductCategoryRepository;
 import com.example.zerowaste.service.ProductCategoryService;
-import java.util.List;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,14 +26,21 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     @Override
     public ProductCategoryResponseDto save(ProductCategoryRequestDto requestDto) {
         ProductCategory category = categoryMapper.toEntity(requestDto);
+        String name = normalizeName(category.getName());
+
+        if (categoryRepository.existsByNameIgnoreCase(name)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Category already exists: " + name);
+        }
+
+        category.setName(name);
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Override
-    public List<ProductCategoryResponseDto> findAll() {
-        return categoryRepository.findAll().stream()
-                .map(categoryMapper::toDto)
-                .toList();
+    public Page<ProductCategoryResponseDto> findAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable)
+                .map(categoryMapper::toDto);
     }
 
     @Override
@@ -42,6 +53,14 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             Long id, ProductCategoryRequestDto requestDto) {
         ProductCategory category = findCategory(id);
         categoryMapper.updateFromDto(requestDto, category);
+        String name = normalizeName(category.getName());
+
+        if (categoryRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Category already exists: " + name);
+        }
+
+        category.setName(name);
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
@@ -55,5 +74,14 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Cannot find category with id: " + id));
+    }
+
+    private String normalizeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Category name cannot be empty");
+        }
+
+        return name.trim().toLowerCase(Locale.ROOT);
     }
 }

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create new product")
     public ProductResponseDto createProduct(
@@ -62,7 +64,7 @@ public class ProductController {
         return productService.findByCategoryId(id, pageable);
     }
 
-    @GetMapping("/uzytkownik/{id}")
+    @GetMapping("/user/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get products by seller")
     public Page<ProductResponseDto> getProductsBySeller(
@@ -71,6 +73,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update product by id")
     public ProductResponseDto updateProduct(
@@ -81,6 +84,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete product by id")
     public void deleteProduct(
