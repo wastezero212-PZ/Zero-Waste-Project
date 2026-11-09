@@ -1,11 +1,11 @@
 package com.example.zerowaste.dto.cart;
 
 import java.math.BigDecimal;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-@AllArgsConstructor
+@Setter
 public class CartItemResponseDto {
 
     private Long id;

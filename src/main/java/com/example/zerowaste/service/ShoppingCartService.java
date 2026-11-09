@@ -20,7 +20,7 @@ public interface ShoppingCartService {
             UpdateCartItemRequestDto request
     );
 
-    ShoppingCartResponseDto removeItem(
+    void removeItem(
             Long userId,
             Long itemId
     );

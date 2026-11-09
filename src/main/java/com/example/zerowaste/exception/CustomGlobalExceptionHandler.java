@@ -21,20 +21,38 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex) {
+    public ResponseEntity<Object> handleEntityNotFoundException(
+            EntityNotFoundException ex
+    ) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
         body.put("errors", ex.getMessage());
+
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RegistrationException.class)
-    public ResponseEntity<Object> handleRegistrationException(RegistrationException ex) {
+    public ResponseEntity<Object> handleRegistrationException(
+            RegistrationException ex
+    ) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", ex.getMessage());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmptyShoppingCartException.class)
+    public ResponseEntity<Object> handleEmptyShoppingCartException(
+            EmptyShoppingCartException ex
+    ) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("errors", ex.getMessage());
+
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
@@ -43,14 +61,20 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
             MethodArgumentNotValidException ex,
             @NonNull HttpHeaders headers,
             @NonNull HttpStatusCode status,
-            @NonNull WebRequest request) {
+            @NonNull WebRequest request
+    ) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
-        List<String> mappedErrors = ex.getBindingResult().getAllErrors().stream()
+
+        List<String> mappedErrors = ex.getBindingResult()
+                .getAllErrors()
+                .stream()
                 .map(this::getErrorMessage)
                 .toList();
+
         body.put("errors", mappedErrors);
+
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
@@ -58,8 +82,10 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         if (objectError instanceof FieldError) {
             String field = ((FieldError) objectError).getField();
             String defaultMessage = objectError.getDefaultMessage();
+
             return field + " " + defaultMessage;
         }
+
         return objectError.getDefaultMessage();
     }
 }
