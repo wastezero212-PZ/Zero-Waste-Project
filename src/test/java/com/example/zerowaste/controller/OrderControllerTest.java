@@ -2,10 +2,13 @@ package com.example.zerowaste.controller;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.zerowaste.dto.order.OrderResponseDto;
 import com.example.zerowaste.exception.CustomGlobalExceptionHandler;
 import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.exception.OrderException;
@@ -98,5 +101,47 @@ class OrderControllerTest {
     private UsernamePasswordAuthenticationToken authentication() {
         return new UsernamePasswordAuthenticationToken(
                 "buyer@example.com", null, List.of());
+    }
+
+    @Test
+    void shouldReturn200WhenGettingMyOrders() throws Exception {
+        when(orderService.getMyOrders("buyer@example.com"))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/api/orders/my")
+                        .principal(authentication()))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void shouldReturn200WhenGettingSellerOrders() throws Exception {
+        when(orderService.getSellerOrders(2L, "buyer@example.com"))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/api/orders/seller/2")
+                        .principal(authentication()))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void shouldReturn200WhenGettingOrderItems() throws Exception {
+        OrderResponseDto.OrderItemDto item =
+                new OrderResponseDto.OrderItemDto(
+                        5L,
+                        2,
+                        new BigDecimal("40.00")
+                );
+
+        when(orderService.getOrderItems(1L, "buyer@example.com"))
+                .thenReturn(List.of(item));
+
+        mockMvc.perform(get("/api/orders/1/items")
+                        .principal(authentication()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].productId").value(5))
+                .andExpect(jsonPath("$[0].quantity").value(2))
+                .andExpect(jsonPath("$[0].totalPrice").value(40.00));
     }
 }
