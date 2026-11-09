@@ -91,4 +91,50 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.deleteById(id);
     }
+
+    @Override
+    public UserResponseDto createAdmin() {
+
+        UserRegistrationRequestDto requestDto = new UserRegistrationRequestDto();
+        requestDto.setEmail("Admin@admin.com");
+        requestDto.setPassword("adminPassword");
+        requestDto.setRepeatPassword("adminPassword");
+        requestDto.setFirstName("admin");
+        requestDto.setLastName("admin");
+
+        requestDto.setEmail(requestDto.getEmail().toLowerCase());
+        if (userRepository.findByEmail(
+                requestDto.getEmail()).isPresent()) {
+            throw new RegistrationException(
+                    "User with email: "
+                            + requestDto.getEmail()
+                            + " already exists.");
+        }
+        requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+        User user = userMapper.toEntity(requestDto);
+
+        if (roleRepository.findByName(Role.RoleName.USER).isEmpty()) {
+            Role userRole = new Role();
+            userRole.setName(Role.RoleName.USER);
+            roleRepository.save(userRole);
+        }
+
+        if (roleRepository.findByName(Role.RoleName.ADMIN).isEmpty()) {
+            Role adminRole = new Role();
+            adminRole.setName(Role.RoleName.ADMIN);
+            roleRepository.save(adminRole);
+        }
+
+        Role roleAdmin = roleRepository.findByName(Role.RoleName.ADMIN).orElseThrow(
+                () -> new EntityNotFoundException("Can't find role with type ADMIN")
+        );
+
+        Role roleUser = roleRepository.findByName(Role.RoleName.USER).orElseThrow(
+                () -> new EntityNotFoundException("Can't find role with type USER")
+        );
+
+        user.setRoles(Set.of(roleUser, roleAdmin));
+        User saved = userRepository.save(user);
+        return userMapper.toDto(saved);
+    }
 }
