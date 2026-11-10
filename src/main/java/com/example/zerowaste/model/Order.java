@@ -7,8 +7,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,11 +30,14 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
+    @ManyToOne
     @JoinColumn(nullable = false, name = "buyer_id")
     private User buyer;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false, name = "seller_id")
     private User seller;
 
@@ -46,4 +49,9 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> orderItems = new HashSet<>();
+
+    public void addOrderItem(OrderItem orderItem) {
+        orderItem.setOrder(this);
+        orderItems.add(orderItem);
+    }
 }
