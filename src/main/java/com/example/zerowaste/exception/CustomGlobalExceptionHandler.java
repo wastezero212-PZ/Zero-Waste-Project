@@ -21,6 +21,15 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(NotEnoughQuantityException.class)
+    public ResponseEntity<Object> handleNotEnoughQuantityException(NotEnoughQuantityException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(BuyYourOwnItemException.class)
     public ResponseEntity<Object> handleBuyYourOwnItemException(BuyYourOwnItemException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -49,38 +58,29 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFoundException(
-            EntityNotFoundException ex
-    ) {
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
         body.put("errors", ex.getMessage());
-
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RegistrationException.class)
-    public ResponseEntity<Object> handleRegistrationException(
-            RegistrationException ex
-    ) {
+    public ResponseEntity<Object> handleRegistrationException(RegistrationException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", ex.getMessage());
-
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EmptyShoppingCartException.class)
-    public ResponseEntity<Object> handleEmptyShoppingCartException(
-            EmptyShoppingCartException ex
-    ) {
+    public ResponseEntity<Object> handleEmptyShoppingCartException(EmptyShoppingCartException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", ex.getMessage());
-
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 

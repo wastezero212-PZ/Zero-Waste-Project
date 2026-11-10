@@ -4,6 +4,7 @@ import com.example.zerowaste.dto.shoppingcart.CartItemRequestDto;
 import com.example.zerowaste.dto.shoppingcart.ShoppingCartResponseDto;
 import com.example.zerowaste.exception.BuyYourOwnItemException;
 import com.example.zerowaste.exception.EntityNotFoundException;
+import com.example.zerowaste.exception.NotEnoughQuantityException;
 import com.example.zerowaste.mapper.CartMapper;
 import com.example.zerowaste.model.CartItem;
 import com.example.zerowaste.model.Product;
@@ -48,6 +49,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 () -> new EntityNotFoundException("Product not found with id: " + request.getProductId())
         );
 
+        if (product.getQuantity() < request.getQuantity()) {
+            throw new NotEnoughQuantityException("Not enough quantity of product in stock.");
+        }
+
         if (Objects.equals(product.getSeller().getId(), userId)) {
             throw new BuyYourOwnItemException("Cannot add your own product to cart.");
         }
@@ -76,6 +81,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         CartItem item = cartItemRepository.findById(itemId).orElseThrow(
                 () -> new EntityNotFoundException("Cart item not found with id: " + itemId)
         );
+
+        if (item.getProduct().getQuantity() < request.getQuantity()) {
+            throw new NotEnoughQuantityException("Not enough quantity of product in stock.");
+        }
 
         if (!item.getShoppingCart().getId().equals(cart.getId())) {
             throw new IllegalArgumentException("Cart item with id: " + itemId + " does not belong to user with id: " + userId);
