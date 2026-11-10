@@ -34,12 +34,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto save(UserRegistrationRequestDto requestDto) {
         requestDto.setEmail(requestDto.getEmail().toLowerCase());
-        if (userRepository.findByEmail(
-                requestDto.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
             throw new RegistrationException(
                     "User with email: "
-                    + requestDto.getEmail()
-                    + " already exists.");
+                            + requestDto.getEmail()
+                            + " already exists.");
         }
         requestDto.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         User user = userMapper.toEntity(requestDto);
@@ -50,18 +49,20 @@ public class UserServiceImpl implements UserService {
             roleRepository.save(userRole);
         }
 
-        ShoppingCart cart = new ShoppingCart();
-        cart.setOwner(user);
-        cart.setTotalPrice(BigDecimal.ZERO);
-        cartRepository.save(cart);
-
         Role roleUser = roleRepository.findByName(Role.RoleName.USER).orElseThrow(
                 () -> new EntityNotFoundException("Can't find role with type USER")
         );
 
         user.setRoles(Set.of(roleUser));
-        User saved = userRepository.save(user);
-        return userMapper.toDto(saved);
+
+        User savedUser = userRepository.save(user);
+
+        ShoppingCart cart = new ShoppingCart();
+        cart.setOwner(savedUser);
+        cart.setTotalPrice(BigDecimal.ZERO);
+        cartRepository.save(cart);
+
+        return userMapper.toDto(savedUser);
     }
 
     @Override
@@ -146,6 +147,12 @@ public class UserServiceImpl implements UserService {
 
         user.setRoles(Set.of(roleUser, roleAdmin));
         User saved = userRepository.save(user);
+
+        ShoppingCart cart = new ShoppingCart();
+        cart.setOwner(saved);
+        cart.setTotalPrice(BigDecimal.ZERO);
+        cartRepository.save(cart);
+
         return userMapper.toDto(saved);
     }
 }

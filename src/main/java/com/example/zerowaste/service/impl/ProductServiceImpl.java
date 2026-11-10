@@ -6,6 +6,7 @@ import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.mapper.ProductMapper;
 import com.example.zerowaste.model.Product;
 import com.example.zerowaste.model.ProductCategory;
+import com.example.zerowaste.model.Role;
 import com.example.zerowaste.model.User;
 import com.example.zerowaste.repository.ProductCategoryRepository;
 import com.example.zerowaste.repository.ProductRepository;
@@ -71,8 +72,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductDto updateById(
-            Long id, ProductRequestDto requestDto, String sellerEmail) {
+    public ProductDto updateById(Long id, ProductRequestDto requestDto, String sellerEmail) {
         Product product = findProduct(id);
         checkOwner(product, sellerEmail);
 
@@ -104,9 +104,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         for (Long categoryId : categoryIds) {
-            ProductCategory category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Cannot find category with id: " + categoryId));
+            ProductCategory category = categoryRepository.findById(categoryId).orElseThrow(
+                    () -> new EntityNotFoundException("Cannot find category with id: " + categoryId));
             categories.add(category);
         }
 
@@ -114,6 +113,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private void checkOwner(Product product, String sellerEmail) {
+
+        User user = userRepository.findByEmail(sellerEmail).orElseThrow(
+                () -> new EntityNotFoundException("User not found with email: " + sellerEmail)
+        );
+        Set<Role> roles = user.getRoles();
+        for (Role role : roles) {
+            if (role.getName().equals(Role.RoleName.ADMIN)) {
+                return;
+            }
+        }
+
         if (!product.getSeller().getEmail().equalsIgnoreCase(sellerEmail)) {
             throw new AccessDeniedException(
                     "You cannot modify another user's product");

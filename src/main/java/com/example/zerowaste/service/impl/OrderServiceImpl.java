@@ -92,12 +92,11 @@ public class OrderServiceImpl implements OrderService {
             order.setBuyer(user);
             order.setSeller(seller);
             order.setDeleted(false);
-            order.setOrderItems(orderItems);
             order.setTotalPrice(totalPrice);
 
             orderItems.forEach(item -> item.setOrder(order));
+            order.setOrderItems(orderItems);
 
-            orderItemRepository.saveAll(orderItems);
             createdOrders.add(orderRepository.save(order));
         }
 

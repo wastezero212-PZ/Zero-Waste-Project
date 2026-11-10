@@ -2,6 +2,7 @@ package com.example.zerowaste.service.impl;
 
 import com.example.zerowaste.dto.shoppingcart.CartItemRequestDto;
 import com.example.zerowaste.dto.shoppingcart.ShoppingCartResponseDto;
+import com.example.zerowaste.exception.BuyYourOwnItemException;
 import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.mapper.CartMapper;
 import com.example.zerowaste.model.CartItem;
@@ -13,6 +14,8 @@ import com.example.zerowaste.repository.ShoppingCartRepository;
 import com.example.zerowaste.service.ShoppingCartService;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.util.Objects;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +47,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Product product = productRepository.findById(request.getProductId()).orElseThrow(
                 () -> new EntityNotFoundException("Product not found with id: " + request.getProductId())
         );
+
+        if (Objects.equals(product.getSeller().getId(), userId)) {
+            throw new BuyYourOwnItemException("Cannot add your own product to cart.");
+        }
+
         BigDecimal totalPrice = product.getPrice().multiply(new BigDecimal(request.getQuantity()));
 
         CartItem item = new CartItem();
