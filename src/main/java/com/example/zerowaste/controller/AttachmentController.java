@@ -31,7 +31,7 @@ public class AttachmentController {
 
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Upload file to dropbox")
+    @Operation(summary = "Upload file to Dropbox")
     public Attachment uploadAttachment(@RequestParam("file") MultipartFile file) {
         return attachmentService.save(file);
     }
@@ -44,7 +44,7 @@ public class AttachmentController {
     }
 
     @GetMapping("/{id}/view")
-    @Operation(summary = "Stream file from dropbox by attachment id")
+    @Operation(summary = "Stream file from Dropbox by attachment id")
     public ResponseEntity<StreamingResponseBody> viewAttachment(@PathVariable Long id) {
         Attachment attachment = attachmentService.getAttachmentById(id);
 
@@ -61,7 +61,7 @@ public class AttachmentController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Delete file from dropbox")
+    @Operation(summary = "Delete file from Dropbox")
     public void deleteAttachmentById(@PathVariable Long id) {
         attachmentService.deleteById(id);
     }

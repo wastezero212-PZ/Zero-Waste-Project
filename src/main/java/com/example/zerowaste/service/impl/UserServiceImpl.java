@@ -12,6 +12,7 @@ import com.example.zerowaste.repository.RoleRepository;
 import com.example.zerowaste.repository.ShoppingCartRepository;
 import com.example.zerowaste.repository.UserRepository;
 import com.example.zerowaste.service.UserService;
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +103,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserResponseDto createAdmin() {
 
         UserRegistrationRequestDto requestDto = new UserRegistrationRequestDto();

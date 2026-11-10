@@ -3,7 +3,6 @@ package com.example.zerowaste.service.impl;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
-import com.dropbox.core.v2.files.DeleteResult;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.example.zerowaste.exception.DropboxException;
 import com.example.zerowaste.service.DropboxService;
@@ -48,9 +47,9 @@ public class DropboxServiceImpl implements DropboxService {
     }
 
     @Override
-    public FileMetadata fetchFile(String dropboxFileId, OutputStream outputStream) {
+    public void fetchFile(String dropboxFileId, OutputStream outputStream) {
         try {
-            return dropboxClient.files().download(dropboxFileId)
+            dropboxClient.files().download(dropboxFileId)
                     .download(outputStream);
         } catch (DbxException e) {
             throw new DropboxException("Failed to download file from Dropbox: " + e.getMessage());
@@ -62,9 +61,9 @@ public class DropboxServiceImpl implements DropboxService {
     }
 
     @Override
-    public DeleteResult deleteFile(String dropboxFileId) {
+    public void deleteFile(String dropboxFileId) {
         try {
-            return dropboxClient.files().deleteV2(dropboxFileId);
+            dropboxClient.files().deleteV2(dropboxFileId);
         } catch (DbxException e) {
             throw new DropboxException("Failed to delete file from Dropbox: " + e.getMessage());
         } catch (Exception e) {
