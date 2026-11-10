@@ -1,29 +1,15 @@
 package com.example.zerowaste.service;
 
-import com.example.zerowaste.dto.cart.AddCartItemRequestDto;
-import com.example.zerowaste.dto.cart.PlaceOrderResponseDto;
-import com.example.zerowaste.dto.cart.ShoppingCartResponseDto;
-import com.example.zerowaste.dto.cart.UpdateCartItemRequestDto;
+import com.example.zerowaste.dto.shoppingcart.CartItemRequestDto;
+import com.example.zerowaste.dto.shoppingcart.ShoppingCartResponseDto;
 
 public interface ShoppingCartService {
 
-    ShoppingCartResponseDto getCart(Long userId);
+    ShoppingCartResponseDto getCartByOwnerId(Long userId);
 
-    ShoppingCartResponseDto addItem(
-            Long userId,
-            AddCartItemRequestDto request
-    );
+    ShoppingCartResponseDto addItem(Long userId, CartItemRequestDto request);
 
-    ShoppingCartResponseDto updateItem(
-            Long userId,
-            Long itemId,
-            UpdateCartItemRequestDto request
-    );
+    ShoppingCartResponseDto updateItem(Long userId, Long itemId, CartItemRequestDto request);
 
-    void removeItem(
-            Long userId,
-            Long itemId
-    );
-
-    PlaceOrderResponseDto placeOrder(Long userId);
+    void removeItem(Long userId, Long itemId);
 }

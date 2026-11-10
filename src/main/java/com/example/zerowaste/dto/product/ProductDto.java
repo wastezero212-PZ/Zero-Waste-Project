@@ -1,4 +1,3 @@
-
 package com.example.zerowaste.dto.product;
 
 import java.math.BigDecimal;
@@ -8,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProductResponseDto {
+public class ProductDto {
 
     private Long id;
     private String title;

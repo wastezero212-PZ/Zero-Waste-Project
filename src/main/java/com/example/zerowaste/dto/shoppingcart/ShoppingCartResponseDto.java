@@ -1,4 +1,4 @@
-package com.example.zerowaste.dto.cart;
+package com.example.zerowaste.dto.shoppingcart;
 
 import java.math.BigDecimal;
 import java.util.List;
