@@ -28,13 +28,20 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private String title;
+
     @Column(nullable = false)
     private BigDecimal price;
+
     private String description;
+
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
+
+    @Column(nullable = false)
+    private int quantity;
 
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)

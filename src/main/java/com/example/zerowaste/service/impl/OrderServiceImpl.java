@@ -4,15 +4,18 @@ import com.example.zerowaste.dto.order.OrderDto;
 import com.example.zerowaste.dto.order.OrderItemDto;
 import com.example.zerowaste.exception.EmptyShoppingCartException;
 import com.example.zerowaste.exception.EntityNotFoundException;
+import com.example.zerowaste.exception.NotEnoughQuantityException;
 import com.example.zerowaste.mapper.OrderMapper;
 import com.example.zerowaste.model.CartItem;
 import com.example.zerowaste.model.Order;
 import com.example.zerowaste.model.OrderItem;
+import com.example.zerowaste.model.Product;
 import com.example.zerowaste.model.ShoppingCart;
 import com.example.zerowaste.model.User;
 import com.example.zerowaste.repository.CartItemRepository;
 import com.example.zerowaste.repository.OrderItemRepository;
 import com.example.zerowaste.repository.OrderRepository;
+import com.example.zerowaste.repository.ProductRepository;
 import com.example.zerowaste.repository.ShoppingCartRepository;
 import com.example.zerowaste.repository.UserRepository;
 import com.example.zerowaste.service.OrderService;
@@ -39,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
+    private final ProductRepository productRepository;
 
     @Override
     @Transactional
@@ -53,6 +57,12 @@ public class OrderServiceImpl implements OrderService {
 
         if (cart.getCartItems().isEmpty()) {
             throw new EmptyShoppingCartException("Cannot create an order from an empty cart");
+        }
+
+        for (CartItem cartItem : cart.getCartItems()) {
+            if (cartItem.getProduct().getQuantity() < cartItem.getQuantity()) {
+                throw new NotEnoughQuantityException("Not enough quantity of product in stock.");
+            }
         }
 
         Map<Long, List<CartItem>> itemsBySellerId = cart.getCartItems().stream()
@@ -92,13 +102,23 @@ public class OrderServiceImpl implements OrderService {
             order.setBuyer(user);
             order.setSeller(seller);
             order.setDeleted(false);
-            order.setOrderItems(orderItems);
             order.setTotalPrice(totalPrice);
 
             orderItems.forEach(item -> item.setOrder(order));
+            order.setOrderItems(orderItems);
 
-            orderItemRepository.saveAll(orderItems);
             createdOrders.add(orderRepository.save(order));
+        }
+
+        for (CartItem cartItem : cart.getCartItems()) {
+
+            Product product = productRepository.findById(cartItem.getProduct().getId()).orElseThrow(
+                    () -> new EntityNotFoundException("Product not found with id: " + cartItem.getProduct().getId())
+            );
+
+            int newQuantity = product.getQuantity() - cartItem.getQuantity();
+            product.setQuantity(newQuantity);
+            productRepository.save(product);
         }
 
         cartItemRepository.deleteAll(cart.getCartItems());

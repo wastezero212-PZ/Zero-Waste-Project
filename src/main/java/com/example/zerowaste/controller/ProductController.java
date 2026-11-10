@@ -43,7 +43,7 @@ public class ProductController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get all products")
+    @Operation(summary = "Get all products paginated")
     public Page<ProductDto> getAllProducts(Pageable pageable) {
         return productService.findAll(pageable);
     }
@@ -57,7 +57,7 @@ public class ProductController {
 
     @GetMapping("/category/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get products by category")
+    @Operation(summary = "Get products by category paginated")
     public Page<ProductDto> getProductsByCategory(
             @PathVariable Long id, Pageable pageable) {
         return productService.findByCategoryId(id, pageable);
@@ -65,10 +65,18 @@ public class ProductController {
 
     @GetMapping("/user/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get products by seller")
+    @Operation(summary = "Get products by seller paginated")
     public Page<ProductDto> getProductsBySeller(
             @PathVariable Long id, Pageable pageable) {
         return productService.findBySellerId(id, pageable);
+    }
+
+    @GetMapping("/user")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get products sold by authenticated user paginated")
+    public Page<ProductDto> getProductsSoldByMe(
+            @AuthenticationPrincipal User user, Pageable pageable) {
+        return productService.findBySellerId(user.getId(), pageable);
     }
 
     @PutMapping("/{id}")

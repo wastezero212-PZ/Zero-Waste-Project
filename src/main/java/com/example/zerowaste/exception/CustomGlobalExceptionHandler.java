@@ -1,5 +1,6 @@
 package com.example.zerowaste.exception;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +21,24 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(NotEnoughQuantityException.class)
+    public ResponseEntity<Object> handleNotEnoughQuantityException(NotEnoughQuantityException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BuyYourOwnItemException.class)
+    public ResponseEntity<Object> handleBuyYourOwnItemException(BuyYourOwnItemException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(DropboxException.class)
     public ResponseEntity<Object> handleDropboxException(DropboxException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -29,39 +48,39 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFoundException(
-            EntityNotFoundException ex
-    ) {
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
         body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("errors", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RegistrationException.class)
-    public ResponseEntity<Object> handleRegistrationException(
-            RegistrationException ex
-    ) {
+    public ResponseEntity<Object> handleRegistrationException(RegistrationException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", ex.getMessage());
-
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EmptyShoppingCartException.class)
-    public ResponseEntity<Object> handleEmptyShoppingCartException(
-            EmptyShoppingCartException ex
-    ) {
+    public ResponseEntity<Object> handleEmptyShoppingCartException(EmptyShoppingCartException ex) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", ex.getMessage());
-
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 

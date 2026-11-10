@@ -1,6 +1,7 @@
 package com.example.zerowaste.repository;
 
 import com.example.zerowaste.model.ProductCategory;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,4 +11,6 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     boolean existsByNameIgnoreCase(String name);
 
     boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
+
+    Optional<ProductCategory> findByName(String name);
 }
