@@ -1,8 +1,7 @@
-
 package com.example.zerowaste.controller;
 
+import com.example.zerowaste.dto.product.ProductDto;
 import com.example.zerowaste.dto.product.ProductRequestDto;
-import com.example.zerowaste.dto.product.ProductResponseDto;
 import com.example.zerowaste.model.User;
 import com.example.zerowaste.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +35,7 @@ public class ProductController {
     @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create new product")
-    public ProductResponseDto createProduct(
+    public ProductDto createProduct(
             @Valid @RequestBody ProductRequestDto requestDto,
             @AuthenticationPrincipal User user) {
         return productService.save(requestDto, user.getEmail());
@@ -45,21 +44,21 @@ public class ProductController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get all products")
-    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
         return productService.findAll(pageable);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get product by id")
-    public ProductResponseDto getProductById(@PathVariable Long id) {
+    public ProductDto getProductById(@PathVariable Long id) {
         return productService.getById(id);
     }
 
     @GetMapping("/category/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get products by category")
-    public Page<ProductResponseDto> getProductsByCategory(
+    public Page<ProductDto> getProductsByCategory(
             @PathVariable Long id, Pageable pageable) {
         return productService.findByCategoryId(id, pageable);
     }
@@ -67,7 +66,7 @@ public class ProductController {
     @GetMapping("/user/{id}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get products by seller")
-    public Page<ProductResponseDto> getProductsBySeller(
+    public Page<ProductDto> getProductsBySeller(
             @PathVariable Long id, Pageable pageable) {
         return productService.findBySellerId(id, pageable);
     }
@@ -76,7 +75,7 @@ public class ProductController {
     @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update product by id")
-    public ProductResponseDto updateProduct(
+    public ProductDto updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequestDto requestDto,
             @AuthenticationPrincipal User user) {

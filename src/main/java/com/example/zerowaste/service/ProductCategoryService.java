@@ -1,21 +1,19 @@
-
 package com.example.zerowaste.service;
 
+import com.example.zerowaste.dto.category.ProductCategoryDto;
 import com.example.zerowaste.dto.category.ProductCategoryRequestDto;
-import com.example.zerowaste.dto.category.ProductCategoryResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductCategoryService {
 
-    ProductCategoryResponseDto save(ProductCategoryRequestDto requestDto);
+    ProductCategoryDto save(ProductCategoryRequestDto requestDto);
 
-    Page<ProductCategoryResponseDto> findAll(Pageable pageable);
+    Page<ProductCategoryDto> findAll(Pageable pageable);
 
-    ProductCategoryResponseDto getById(Long id);
+    ProductCategoryDto getById(Long id);
 
-    ProductCategoryResponseDto updateById(
-            Long id, ProductCategoryRequestDto requestDto);
+    ProductCategoryDto updateById(Long id, ProductCategoryRequestDto requestDto);
 
     void deleteById(Long id);
 }

@@ -1,18 +1,17 @@
 package com.example.zerowaste.service;
 
-import com.example.zerowaste.dto.order.OrderResponseDto;
-import com.example.zerowaste.model.Order;
+import com.example.zerowaste.dto.order.OrderDto;
+import com.example.zerowaste.dto.order.OrderItemDto;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
+    List<OrderDto> createOrders(Long userId);
 
-    Order createOrder(String buyerEmail);
+    Page<OrderDto> getOrdersByUserId(Long userId, Pageable pageable);
 
-    List<OrderResponseDto> getMyOrders(String buyerEmail);
+    Page<OrderDto> getSellerOrders(Long userId, Pageable pageable);
 
-    List<OrderResponseDto> getSellerOrders(
-            Long sellerId, String requesterEmail);
-
-    List<OrderResponseDto.OrderItemDto> getOrderItems(
-            Long orderId, String requesterEmail);
+    Page<OrderItemDto> getOrderItems(Long orderId, Pageable pageable);
 }

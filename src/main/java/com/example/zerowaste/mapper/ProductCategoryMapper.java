@@ -1,9 +1,8 @@
-
 package com.example.zerowaste.mapper;
 
 import com.example.zerowaste.config.MapperConfig;
+import com.example.zerowaste.dto.category.ProductCategoryDto;
 import com.example.zerowaste.dto.category.ProductCategoryRequestDto;
-import com.example.zerowaste.dto.category.ProductCategoryResponseDto;
 import com.example.zerowaste.model.ProductCategory;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -13,7 +12,7 @@ public interface ProductCategoryMapper {
 
     ProductCategory toEntity(ProductCategoryRequestDto requestDto);
 
-    ProductCategoryResponseDto toDto(ProductCategory category);
+    ProductCategoryDto toDto(ProductCategory category);
 
     void updateFromDto(
             ProductCategoryRequestDto requestDto,

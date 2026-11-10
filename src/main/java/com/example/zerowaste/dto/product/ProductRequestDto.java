@@ -1,4 +1,3 @@
-
 package com.example.zerowaste.dto.product;
 
 import jakarta.validation.constraints.DecimalMin;

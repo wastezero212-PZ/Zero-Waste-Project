@@ -1,28 +1,33 @@
 package com.example.zerowaste.service.impl;
 
-import com.example.zerowaste.dto.order.OrderResponseDto;
+import com.example.zerowaste.dto.order.OrderDto;
+import com.example.zerowaste.dto.order.OrderItemDto;
+import com.example.zerowaste.exception.EmptyShoppingCartException;
 import com.example.zerowaste.exception.EntityNotFoundException;
-import com.example.zerowaste.exception.OrderException;
+import com.example.zerowaste.mapper.OrderMapper;
 import com.example.zerowaste.model.CartItem;
 import com.example.zerowaste.model.Order;
 import com.example.zerowaste.model.OrderItem;
-import com.example.zerowaste.model.Product;
 import com.example.zerowaste.model.ShoppingCart;
 import com.example.zerowaste.model.User;
+import com.example.zerowaste.repository.CartItemRepository;
+import com.example.zerowaste.repository.OrderItemRepository;
 import com.example.zerowaste.repository.OrderRepository;
+import com.example.zerowaste.repository.ShoppingCartRepository;
 import com.example.zerowaste.repository.UserRepository;
 import com.example.zerowaste.service.OrderService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -30,148 +35,107 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final EntityManager entityManager;
+    private final OrderMapper orderMapper;
+    private final ShoppingCartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     @Transactional
-    public Order createOrder(String buyerEmail) {
+    public List<OrderDto> createOrders(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User not found with id: " + userId)
+        );
 
-        User buyer = userRepository.findByEmail(buyerEmail)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Buyer not found"));
-
-        ShoppingCart cart = entityManager.createQuery(
-                        "SELECT c FROM ShoppingCart c "
-                                + "WHERE c.owner.id = :buyerId",
-                        ShoppingCart.class)
-                .setParameter("buyerId", buyer.getId())
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .getResultStream()
-                .findFirst()
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Shopping cart not found"));
+        ShoppingCart cart = cartRepository.findByOwner_Id(user.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Cart not found for user with id: " + user.getId())
+        );
 
         if (cart.getCartItems().isEmpty()) {
-            throw new OrderException("Shopping cart is empty");
+            throw new EmptyShoppingCartException("Cannot create an order from an empty cart");
         }
 
-        Order order = new Order();
-        order.setBuyer(buyer);
-        order.setOrderDate(LocalDateTime.now());
+        Map<Long, List<CartItem>> itemsBySellerId = cart.getCartItems().stream()
+                .collect(Collectors.groupingBy(cartItem -> cartItem.getProduct().getSeller().getId()));
 
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        User seller = null;
+        Map<Long, User> sellersMap = userRepository.findAllById(itemsBySellerId.keySet()).stream()
+                .collect(Collectors.toMap(User::getId, seller -> seller));
 
-        for (CartItem cartItem : cart.getCartItems()) {
+        List<Order> createdOrders = new ArrayList<>();
 
-            Product product = cartItem.getProduct();
+        for (Map.Entry<Long, List<CartItem>> entry : itemsBySellerId.entrySet()) {
+            Long sellerId = entry.getKey();
+            List<CartItem> sellerCartItems = entry.getValue();
 
-            if (product == null || product.getSeller() == null) {
-                throw new OrderException("Invalid product");
-            }
-
-            if (cartItem.getQuantity() <= 0) {
-                throw new OrderException("Invalid quantity");
-            }
-
-            if (product.getPrice() == null
-                    || product.getPrice().signum() < 0) {
-                throw new OrderException("Invalid product price");
-            }
-
+            User seller = sellersMap.get(sellerId);
             if (seller == null) {
-                seller = product.getSeller();
-            } else if (!Objects.equals(
-                    seller.getId(), product.getSeller().getId())) {
-                throw new OrderException(
-                        "Products belong to different sellers");
+                throw new EntityNotFoundException("Seller not found with id: " + sellerId);
             }
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProduct(product);
-            orderItem.setQuantity(cartItem.getQuantity());
+            Set<OrderItem> orderItems = sellerCartItems.stream()
+                    .map(cartItem -> {
+                        OrderItem orderItem = new OrderItem();
+                        orderItem.setProduct(cartItem.getProduct());
+                        orderItem.setQuantity(cartItem.getQuantity());
+                        orderItem.setTotalPrice(cartItem.getProduct().getPrice()
+                                .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+                        return orderItem;
+                    })
+                    .collect(Collectors.toSet());
 
-            BigDecimal itemTotal = product.getPrice()
-                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            BigDecimal totalPrice = orderItems.stream()
+                    .map(OrderItem::getTotalPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            orderItem.setTotalPrice(itemTotal);
-            order.addOrderItem(orderItem);
+            Order order = new Order();
+            order.setOrderDate(LocalDateTime.now());
+            order.setBuyer(user);
+            order.setSeller(seller);
+            order.setDeleted(false);
+            order.setOrderItems(orderItems);
+            order.setTotalPrice(totalPrice);
 
-            totalPrice = totalPrice.add(itemTotal);
+            orderItems.forEach(item -> item.setOrder(order));
+
+            orderItemRepository.saveAll(orderItems);
+            createdOrders.add(orderRepository.save(order));
         }
 
-        order.setSeller(seller);
-        order.setTotalPrice(totalPrice);
-
-        Order savedOrder = orderRepository.save(order);
-
+        cartItemRepository.deleteAll(cart.getCartItems());
         cart.getCartItems().clear();
-        cart.setTotalPrice(BigDecimal.ZERO);
 
-        return savedOrder;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponseDto> getMyOrders(String buyerEmail) {
-        User buyer = userRepository.findByEmail(buyerEmail)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Buyer not found"));
-
-        return orderRepository
-                .findByBuyer_IdOrderByOrderDateDesc(buyer.getId())
-                .stream()
-                .map(OrderResponseDto::from)
+        return createdOrders.stream()
+                .map(orderMapper::toDto)
                 .toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponseDto> getSellerOrders(
-            Long sellerId, String requesterEmail) {
+    public Page<OrderDto> getOrdersByUserId(Long userId, Pageable pageable) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User not found with id: " + userId)
+        );
 
-        User requester = userRepository.findByEmail(requesterEmail)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("User not found"));
-
-        if (!Objects.equals(requester.getId(), sellerId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Cannot view another seller's orders");
-        }
-
-        return orderRepository
-                .findBySeller_IdOrderByOrderDateDesc(sellerId)
-                .stream()
-                .map(OrderResponseDto::from)
-                .toList();
+        return orderRepository.findAllByBuyer(user, pageable)
+                .map(orderMapper::toDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<OrderResponseDto.OrderItemDto> getOrderItems(
-            Long orderId, String requesterEmail) {
+    public Page<OrderDto> getSellerOrders(Long userId, Pageable pageable) {
+        User seller = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User not found with id: " + userId)
+        );
 
-        User requester = userRepository.findByEmail(requesterEmail)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("User not found"));
+        return orderRepository.findAllBySeller(seller, pageable)
+                .map(orderMapper::toDto);
+    }
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Order not found"));
+    @Override
+    public Page<OrderItemDto> getOrderItems(Long orderId, Pageable pageable) {
+        Order order = orderRepository.findById(orderId).orElseThrow(
+                () -> new EntityNotFoundException("Order not found with id: " + orderId)
+        );
 
-        boolean isBuyer = Objects.equals(
-                order.getBuyer().getId(), requester.getId());
-
-        boolean isSeller = Objects.equals(
-                order.getSeller().getId(), requester.getId());
-
-        if (!isBuyer && !isSeller) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Access to this order is denied");
-        }
-
-        return OrderResponseDto.from(order).items();
+        return orderItemRepository.findAllByOrder(order, pageable)
+                .map(orderMapper::toOrderItemDto);
     }
 }

@@ -1,4 +1,4 @@
-package com.example.zerowaste.dto.cart;
+package com.example.zerowaste.dto.shoppingcart;
 
 import java.math.BigDecimal;
 import lombok.Getter;
@@ -10,7 +10,6 @@ public class CartItemResponseDto {
 
     private Long id;
     private Long productId;
-    private String productTitle;
     private BigDecimal productPrice;
     private Integer quantity;
     private BigDecimal totalPrice;

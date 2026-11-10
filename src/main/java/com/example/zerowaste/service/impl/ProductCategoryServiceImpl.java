@@ -1,8 +1,7 @@
-
 package com.example.zerowaste.service.impl;
 
+import com.example.zerowaste.dto.category.ProductCategoryDto;
 import com.example.zerowaste.dto.category.ProductCategoryRequestDto;
-import com.example.zerowaste.dto.category.ProductCategoryResponseDto;
 import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.mapper.ProductCategoryMapper;
 import com.example.zerowaste.model.ProductCategory;
@@ -24,7 +23,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     private final ProductCategoryMapper categoryMapper;
 
     @Override
-    public ProductCategoryResponseDto save(ProductCategoryRequestDto requestDto) {
+    public ProductCategoryDto save(ProductCategoryRequestDto requestDto) {
         ProductCategory category = categoryMapper.toEntity(requestDto);
         String name = normalizeName(category.getName());
 
@@ -38,18 +37,18 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
-    public Page<ProductCategoryResponseDto> findAll(Pageable pageable) {
+    public Page<ProductCategoryDto> findAll(Pageable pageable) {
         return categoryRepository.findAll(pageable)
                 .map(categoryMapper::toDto);
     }
 
     @Override
-    public ProductCategoryResponseDto getById(Long id) {
+    public ProductCategoryDto getById(Long id) {
         return categoryMapper.toDto(findCategory(id));
     }
 
     @Override
-    public ProductCategoryResponseDto updateById(
+    public ProductCategoryDto updateById(
             Long id, ProductCategoryRequestDto requestDto) {
         ProductCategory category = findCategory(id);
         categoryMapper.updateFromDto(requestDto, category);

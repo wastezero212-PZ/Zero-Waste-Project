@@ -1,8 +1,7 @@
-
 package com.example.zerowaste.service.impl;
 
+import com.example.zerowaste.dto.product.ProductDto;
 import com.example.zerowaste.dto.product.ProductRequestDto;
-import com.example.zerowaste.dto.product.ProductResponseDto;
 import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.mapper.ProductMapper;
 import com.example.zerowaste.model.Product;
@@ -33,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponseDto save(ProductRequestDto requestDto, String sellerEmail) {
+    public ProductDto save(ProductRequestDto requestDto, String sellerEmail) {
         User seller = userRepository.findByEmail(sellerEmail)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Cannot find seller: " + sellerEmail));
@@ -46,33 +45,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponseDto> findAll(Pageable pageable) {
+    public Page<ProductDto> findAll(Pageable pageable) {
         return productRepository.findAll(pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
-    public Page<ProductResponseDto> findByCategoryId(
+    public Page<ProductDto> findByCategoryId(
             Long categoryId, Pageable pageable) {
         return productRepository.findByCategories_Id(categoryId, pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
-    public Page<ProductResponseDto> findBySellerId(
+    public Page<ProductDto> findBySellerId(
             Long sellerId, Pageable pageable) {
         return productRepository.findBySeller_Id(sellerId, pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
-    public ProductResponseDto getById(Long id) {
+    public ProductDto getById(Long id) {
         return productMapper.toDto(findProduct(id));
     }
 
     @Override
     @Transactional
-    public ProductResponseDto updateById(
+    public ProductDto updateById(
             Long id, ProductRequestDto requestDto, String sellerEmail) {
         Product product = findProduct(id);
         checkOwner(product, sellerEmail);

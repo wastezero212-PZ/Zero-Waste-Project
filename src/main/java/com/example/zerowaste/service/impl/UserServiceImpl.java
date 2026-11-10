@@ -6,10 +6,13 @@ import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.exception.RegistrationException;
 import com.example.zerowaste.mapper.UserMapper;
 import com.example.zerowaste.model.Role;
+import com.example.zerowaste.model.ShoppingCart;
 import com.example.zerowaste.model.User;
 import com.example.zerowaste.repository.RoleRepository;
+import com.example.zerowaste.repository.ShoppingCartRepository;
 import com.example.zerowaste.repository.UserRepository;
 import com.example.zerowaste.service.UserService;
+import java.math.BigDecimal;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ShoppingCartRepository cartRepository;
 
     @Override
     public UserResponseDto save(UserRegistrationRequestDto requestDto) {
@@ -44,6 +48,11 @@ public class UserServiceImpl implements UserService {
             userRole.setName(Role.RoleName.USER);
             roleRepository.save(userRole);
         }
+
+        ShoppingCart cart = new ShoppingCart();
+        cart.setOwner(user);
+        cart.setTotalPrice(BigDecimal.ZERO);
+        cartRepository.save(cart);
 
         Role roleUser = roleRepository.findByName(Role.RoleName.USER).orElseThrow(
                 () -> new EntityNotFoundException("Can't find role with type USER")
