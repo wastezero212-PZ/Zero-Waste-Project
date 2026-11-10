@@ -16,7 +16,6 @@ import com.example.zerowaste.service.ShoppingCartService;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Objects;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,9 +40,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     @Transactional
     public ShoppingCartResponseDto addItem(Long userId, CartItemRequestDto request) {
-        ShoppingCart cart = cartRepository.findByOwner_Id(userId).orElseThrow(
-                () -> new EntityNotFoundException("Cart not found for user with id: " + userId)
-        );
 
         Product product = productRepository.findById(request.getProductId()).orElseThrow(
                 () -> new EntityNotFoundException("Product not found with id: " + request.getProductId())
@@ -56,6 +52,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         if (Objects.equals(product.getSeller().getId(), userId)) {
             throw new BuyYourOwnItemException("Cannot add your own product to cart.");
         }
+
+        ShoppingCart cart = cartRepository.findByOwner_Id(userId).orElseThrow(
+                () -> new EntityNotFoundException("Cart not found for user with id: " + userId)
+        );
 
         BigDecimal totalPrice = product.getPrice().multiply(new BigDecimal(request.getQuantity()));
 
