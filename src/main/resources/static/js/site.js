@@ -1,3 +1,4 @@
+import { mountProducts } from "./products.js";
 import {
     clearAuthToken,
     getAuthToken,
@@ -38,7 +39,6 @@ function renderMessage(message, isError = false) {
 }
 
 function renderAccount(user) {
-    contentContainer.replaceChildren();
     const card = document.createElement("section");
     card.className = "account-card";
     const details = document.createElement("div");
@@ -53,11 +53,11 @@ function renderAccount(user) {
     signOut.addEventListener("click", () => {
         clearAuthToken();
         renderSignedOutNavigation();
-        contentContainer.replaceChildren();
+        productView.refresh();
     });
     details.append(heading, email);
     card.append(details, signOut);
-    contentContainer.append(card);
+    contentContainer.prepend(card);
     renderSignedInNavigation(user);
 }
 
@@ -94,11 +94,12 @@ function openSignInDialog(event) {
 }
 
 renderSignedOutNavigation();
+const productView = mountProducts(contentContainer);
 
 const existingToken = getAuthToken();
 if (existingToken) {
-    loadAccount(existingToken).catch((error) => {
+    loadAccount(existingToken).catch(() => {
         clearAuthToken();
-        renderMessage(error.message);
+        renderSignedOutNavigation();
     });
 }
