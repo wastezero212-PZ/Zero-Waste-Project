@@ -1,4 +1,3 @@
-
 package com.example.zerowaste.repository;
 
 import com.example.zerowaste.model.Product;
