@@ -3,3 +3,4 @@
 
 # Compiled Java classes
 *.class
+.env
