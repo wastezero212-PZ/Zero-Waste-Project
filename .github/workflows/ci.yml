@@ -9,14 +9,19 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:17
         env:
-          MYSQL_ROOT_PASSWORD: Root1234!
-          MYSQL_DATABASE: zero_waste
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 123456
+          POSTGRES_DB: zero_waste
         ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping -h localhost" --health-interval=10s --health-timeout=5s --health-retries=3
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d zero_waste"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
@@ -28,5 +33,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: Build and Test with Maven
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_LOCAL_PORT: 5432
+          POSTGRES_DATABASE: zero_waste
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 123456
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
         run: mvn --batch-mode --update-snapshots verify
