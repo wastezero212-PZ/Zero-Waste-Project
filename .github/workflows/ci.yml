@@ -8,16 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: Root1234!
-          MYSQL_DATABASE: zero_waste
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping -h localhost" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
       - uses: actions/checkout@v4
 
@@ -28,5 +18,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: Build and Test with Maven
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_LOCAL_PORT: 5432
+          POSTGRES_DATABASE: zero_waste
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 123456
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'dGhpcy1pcy1hLXRlc3Qtand0LXNlY3JldC1rZXktZm9yLWNpLTI1Ni1iaXQtc2FmZQ==' }}
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN || 'test-dropbox-token' }}
         run: mvn --batch-mode --update-snapshots verify

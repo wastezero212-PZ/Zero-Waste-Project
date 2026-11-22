@@ -3,6 +3,7 @@ package com.example.zerowaste.controller.testcontroller;
 import com.example.zerowaste.dto.category.ProductCategoryRequestDto;
 import com.example.zerowaste.dto.product.ProductRequestDto;
 import com.example.zerowaste.dto.user.UserRegistrationRequestDto;
+import com.example.zerowaste.exception.EntityNotFoundException;
 import com.example.zerowaste.model.User;
 import com.example.zerowaste.repository.ProductCategoryRepository;
 import com.example.zerowaste.repository.UserRepository;
@@ -53,9 +54,15 @@ public class TestController {
         categoryService.save(createCategory("Clothing", "Everyday fashion and other clothing items."));
         categoryService.save(createCategory("Motorisation", "Used cars, spare parts and so on."));
 
-        Long electronicsId = categoryRepository.findByName("Electronics").orElseThrow().getId();
-        Long clothingId = categoryRepository.findByName("Clothing").orElseThrow().getId();
-        Long motorisationId = categoryRepository.findByName("Motorisation").orElseThrow().getId();
+        Long electronicsId = categoryRepository.findByNameIgnoreCase("Electronics")
+                .orElseThrow(() -> new EntityNotFoundException("Category not found: Electronics"))
+                .getId();
+        Long clothingId = categoryRepository.findByNameIgnoreCase("Clothing")
+                .orElseThrow(() -> new EntityNotFoundException("Category not found: Clothing"))
+                .getId();
+        Long motorisationId = categoryRepository.findByNameIgnoreCase("Motorisation")
+                .orElseThrow(() -> new EntityNotFoundException("Category not found: Motorisation"))
+                .getId();
 
         User bob = userRepository.findByEmail("bob@gmail.com").orElseThrow();
         User alice = userRepository.findByEmail("alice@gmail.com").orElseThrow();
